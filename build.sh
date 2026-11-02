@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 SDK=${ANDROID_HOME:-$ANDROID_SDK_ROOT}
-BT=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+BT="$SDK/build-tools/35.0.0"
 JAR="$SDK/platforms/android-35/android.jar"
 mkdir -p out/classes out/tests out/dex
 javac -d out/tests src/com/fabio/aether/Rules.java tests/RulesTest.java
 java -cp out/tests RulesTest | tee out/test-results.txt
-javac -source 8 -target 8 -bootclasspath "$JAR" -d out/classes src/com/fabio/aether/*.java
+javac -source 8 -target 8 -classpath "$JAR" -d out/classes src/com/fabio/aether/*.java
 "$BT/aapt" package -f -M AndroidManifest.xml -I "$JAR" -F out/unsigned.apk
 "$BT/d8" --lib "$JAR" --min-api 23 --output out/dex $(find out/classes -name "*.class")
 (cd out/dex && zip -j ../unsigned.apk classes.dex)
