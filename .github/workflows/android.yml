@@ -1,0 +1,24 @@
+name: Android APK
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Test and build APK
+        run: bash build.sh
+      - name: Publish downloadable prototype
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view v0.1 || gh release create v0.1 --title "Aether Blocks v0.1 - Prototipo Android" --notes "Sandbox original 2D. Espada, dash, mineracao, construcao, slimes, guardiao e progresso local. Sem permissoes de rede. APK de teste, nao e um jogo 3D completo."
+          gh release upload v0.1 out/Aether-Blocks-v0.1.apk out/test-results.txt out/apk-verification.txt out/apk-info.txt out/SHA256SUMS.txt --clobber
